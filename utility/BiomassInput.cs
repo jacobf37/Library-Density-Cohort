@@ -53,7 +53,7 @@ namespace Landis.Library.DensityCohorts
 
     }
 
-    class BiomassParamParser : Landis.TextParser<BiomassParam>
+    public class BiomassParamParser : Landis.TextParser<BiomassParam>
     {
         
         public override string LandisDataValue

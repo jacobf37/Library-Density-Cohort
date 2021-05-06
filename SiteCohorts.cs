@@ -413,7 +413,7 @@ namespace Landis.Library.DensityCohorts
             }
         }
 
-        public int ReduceOrKillBiomassCohorts(IDisturbance disturbance)
+        public int ReduceOrKillDensityCohorts(IDisturbance disturbance)
         {
             List<int> reduction = new List<int>();
 
@@ -431,7 +431,8 @@ namespace Landis.Library.DensityCohorts
                     // Disturbances return reduction in aboveground biomass
                     int _reduction = disturbance.ReduceOrKillMarkedCohort(cohort);
                     double reductionProp = _reduction / cohort.Biomass;
-                    int treeRemoval = (int)Math.Round(cohort.Treenumber * reductionProp);
+                    int treeRemoval = _reduction;
+                    //int treeRemoval = (int)Math.Round(cohort.Treenumber * reductionProp);
                     reduction.Add(_reduction);
                     if (reduction[reduction.Count() - 1] >= cohort.Treenumber)  //Compare to aboveground biomass
                     {
@@ -575,7 +576,7 @@ namespace Landis.Library.DensityCohorts
 
             //FIXME - JSF
             //ReduceOrKillBiomassCohorts(new Landis.Library.BiomassCohorts.WrappedDisturbance(disturbance));
-            ReduceOrKillBiomassCohorts(new Landis.Library.DensityCohorts.WrappedDisturbance(disturbance));
+            ReduceOrKillDensityCohorts(new Landis.Library.DensityCohorts.WrappedDisturbance(disturbance));
         }
 
         void Landis.Library.AgeOnlyCohorts.ISiteCohorts.RemoveMarkedCohorts(Landis.Library.AgeOnlyCohorts.ISpeciesCohortsDisturbance disturbance)

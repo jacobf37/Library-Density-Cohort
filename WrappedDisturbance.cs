@@ -41,7 +41,7 @@ namespace Landis.Library.DensityCohorts
 
         //---------------------------------------------------------------------
 
-        public int ReduceOrKillMarkedCohort(ICohort cohort)
+        public int ReduceOrKillMarkedCohort(Landis.Library.DensityCohorts.ICohort cohort)
         {
             if (ageCohortDisturbance.MarkCohortForDeath(cohort)) {
                 Cohort.KilledByAgeOnlyDisturbance(this, cohort,

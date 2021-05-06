@@ -48,6 +48,6 @@ namespace Landis.Library.DensityCohorts
         /// <returns>
         /// The total of all the cohorts' biomass reductions.
         /// </returns>
-        int ReduceOrKillBiomassCohorts(IDisturbance disturbance);
+        int ReduceOrKillDensityCohorts(IDisturbance disturbance);
     }
 }
