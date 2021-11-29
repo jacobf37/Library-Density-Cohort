@@ -1,5 +1,7 @@
 //  Authors:  Robert M. Scheller, James B. Domingo
 
+using Landis.SpatialModeling;
+
 namespace Landis.Library.DensityCohorts
 {
     /// <summary>
@@ -39,6 +41,10 @@ namespace Landis.Library.DensityCohorts
         /// The site where the cohort is located.
         /// </param>
         float ComputeCohortRD(Cohort cohort);
+
+        double ComputeCohortBasalArea(ICohort cohort);
+
+        int ComputeNonWoodyBiomass(ActiveSite site);
 
         void ChangeTreenumber(int delta);
 

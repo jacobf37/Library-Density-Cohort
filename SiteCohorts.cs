@@ -11,12 +11,13 @@ using System.Diagnostics;
 using System.Linq;
 using Landis.Library.Climate;
 using Landis.Library.Cohorts;
-
+using AgeCohort = Landis.Library.AgeOnlyCohorts;
 
 namespace Landis.Library.DensityCohorts
 {
     //public class SiteCohorts : ISiteCohorts, Landis.Library.DensityCohorts.ISiteCohorts, Landis.Library.BiomassCohorts.ISiteCohorts, Landis.Library.AgeOnlyCohorts.ISiteCohorts
-    public class SiteCohorts : ISiteCohorts, Landis.Library.BiomassCohorts.ISiteCohorts, Landis.Library.AgeOnlyCohorts.ISiteCohorts
+    public class SiteCohorts 
+        : ISiteCohorts, Landis.Library.BiomassCohorts.ISiteCohorts, Landis.Library.AgeOnlyCohorts.ISiteCohorts
     {
         public ActiveSite Site;
         private Dictionary<ISpecies, List<Cohort>> cohorts = null;
@@ -418,44 +419,62 @@ namespace Landis.Library.DensityCohorts
             List<int> reduction = new List<int>();
 
             List<Cohort> ToRemove = new List<Cohort>();
-            
+
+            double baCheck = 0;
+
             foreach (List<Cohort> species_cohort in cohorts.Values)
             {
                 //Landis.Library.DensityCohorts.SpeciesCohorts species_cohorts = GetSpeciesCohort(cohorts[species_cohort[0].Species]);
-                foreach (Landis.Library.DensityCohorts.ICohort cohort in (IEnumerable<Landis.Library.DensityCohorts.ICohort>)species_cohort)
+                foreach (ICohort cohort in (IEnumerable<ICohort>)species_cohort)
                 //for (int c =0;c< species_cohort.Count(); c++)
                 {
                     //FIXME - JSF
                     //Landis.Library.BiomassCohorts.ICohort biocohort = (Library.BiomassCohorts.ICohort) cohort;
                     //int _reduction = disturbance.ReduceOrKillMarkedCohort(biocohort);
                     // Disturbances return reduction in aboveground biomass
+                    baCheck += cohort.ComputeCohortBasalArea(cohort);
                     int _reduction = disturbance.ReduceOrKillMarkedCohort(cohort);
-                    double reductionProp = _reduction / cohort.Biomass;
+                    //double reductionProp = _reduction / cohort.Biomass;
+                    // JSF - This works with removal from Landuse extension
                     int treeRemoval = _reduction;
                     //int treeRemoval = (int)Math.Round(cohort.Treenumber * reductionProp);
                     reduction.Add(_reduction);
                     if (reduction[reduction.Count() - 1] >= cohort.Treenumber)  //Compare to aboveground biomass
                     {
+
                         ToRemove.Add((Cohort) cohort);
                         // Edited by BRM - 090115
                     }
                     else
                     {
                         //FIXME compute treenumber reduction from disturbance reduction
-                         //Proportion of aboveground biomass
+                        //Proportion of aboveground biomass
                         cohort.ChangeTreenumber(-treeRemoval);  // Reduction applies to all biomass
                     }
+                    
                     //
                 }
                 
             }
 
+
             foreach (Cohort cohort in ToRemove)
             {
                 RemoveCohort(cohort, disturbance.Type);
+                baCheck = cohort.ComputeCohortBasalArea(cohort);
             }
 
-            return reduction.Sum();
+            baCheck = 0;
+            foreach (List<Cohort> species_cohort in cohorts.Values)
+            {
+                //Landis.Library.DensityCohorts.SpeciesCohorts species_cohorts = GetSpeciesCohort(cohorts[species_cohort[0].Species]);
+                foreach (ICohort cohort in (IEnumerable<ICohort>)species_cohort)
+                //for (int c =0;c< species_cohort.Count(); c++)
+                {
+                    baCheck += cohort.ComputeCohortBasalArea(cohort);
+                }
+            }
+                    return reduction.Sum();
         }
 
         public int ReduceOrKillBiomassCohorts(Landis.Library.BiomassCohorts.IDisturbance disturbance)
@@ -565,7 +584,7 @@ namespace Landis.Library.DensityCohorts
             }
         }
 
-        void Landis.Library.AgeOnlyCohorts.ISiteCohorts.RemoveMarkedCohorts(Landis.Library.AgeOnlyCohorts.ICohortDisturbance disturbance)
+        void ISiteCohorts.RemoveMarkedCohorts(ICohortDisturbance disturbance)
         {
             /*
             if (AgeOnlyDisturbanceEvent != null)
@@ -576,10 +595,10 @@ namespace Landis.Library.DensityCohorts
 
             //FIXME - JSF
             //ReduceOrKillBiomassCohorts(new Landis.Library.BiomassCohorts.WrappedDisturbance(disturbance));
-            ReduceOrKillDensityCohorts(new Landis.Library.DensityCohorts.WrappedDisturbance(disturbance));
+            ReduceOrKillDensityCohorts(disturbance);
         }
 
-        void Landis.Library.AgeOnlyCohorts.ISiteCohorts.RemoveMarkedCohorts(Landis.Library.AgeOnlyCohorts.ISpeciesCohortsDisturbance disturbance)
+        void ISiteCohorts.RemoveMarkedCohorts(ISpeciesCohortsDisturbance disturbance)
         {
             /*
             if (AgeOnlyDisturbanceEvent != null)
@@ -597,7 +616,7 @@ namespace Landis.Library.DensityCohorts
 
             List<Cohort> ToRemove = new List<Cohort>();
 
-            Landis.Library.AgeOnlyCohorts.SpeciesCohortBoolArray isSpeciesCohortDamaged = new Landis.Library.AgeOnlyCohorts.SpeciesCohortBoolArray();
+            SpeciesCohortBoolArray isSpeciesCohortDamaged = new SpeciesCohortBoolArray();
 
             foreach (ISpecies spc in cohorts.Keys)
             {
@@ -626,9 +645,43 @@ namespace Landis.Library.DensityCohorts
             }
         }
 
+        //---------------------------------------------------------------------
+
+        void AgeCohort.ISiteCohorts.RemoveMarkedCohorts(AgeCohort.ICohortDisturbance disturbance)
+        {
+            if (AgeOnlyDisturbanceEvent != null)
+                AgeOnlyDisturbanceEvent(this, new DisturbanceEventArgs(disturbance.CurrentSite,
+                                                                       disturbance.Type));
+            ReduceOrKillDensityCohorts(new WrappedDisturbance(disturbance));
+        }
+
+        //---------------------------------------------------------------------
+
+        void AgeCohort.ISiteCohorts.RemoveMarkedCohorts(AgeCohort.ISpeciesCohortsDisturbance disturbance)
+        {
+            if (AgeOnlyDisturbanceEvent != null)
+                AgeOnlyDisturbanceEvent(this, new DisturbanceEventArgs(disturbance.CurrentSite,
+                                                                       disturbance.Type));
+
+
+            //JSF - FIXME
+
+        }
+
+        //---------------------------------------------------------------------
+
+        /// <summary>
+        /// Occurs when a site is disturbed by an age-only disturbance.
+        /// </summary>
+        public static event DisturbanceEventHandler AgeOnlyDisturbanceEvent;
+
+        //---------------------------------------------------------------------
 
         public void RemoveCohort(Cohort cohort, ExtensionType disturbanceType)
         {
+            SiteVars.summaryLogMortality.Clear();
+            SummaryLogMortality slm = new SummaryLogMortality();
+
             cohorts[cohort.Species].Remove(cohort);
 
             if (cohorts[cohort.Species].Count == 0)

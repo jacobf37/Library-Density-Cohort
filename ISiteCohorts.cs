@@ -1,6 +1,7 @@
 //  Authors:  Robert M. Scheller, James B. Domingo
 using System.Collections.Generic;
 using Landis.Core;
+using AgeCohort = Landis.Library.AgeOnlyCohorts;
 //using Landis.Extension.Succession.BiomassPnET;
 
 namespace Landis.Library.DensityCohorts
@@ -49,5 +50,10 @@ namespace Landis.Library.DensityCohorts
         /// The total of all the cohorts' biomass reductions.
         /// </returns>
         int ReduceOrKillDensityCohorts(IDisturbance disturbance);
+
+        void RemoveMarkedCohorts(ISpeciesCohortsDisturbance disturbance);
+
+        void RemoveMarkedCohorts(ICohortDisturbance disturbance);
+        
     }
 }

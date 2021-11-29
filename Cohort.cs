@@ -59,12 +59,14 @@ namespace Landis.Library.DensityCohorts
         {
             get
             {
+                //JSF - Output for Biomass in FIA units
+                
                 ISpeciesDensity speciesdensity = SpeciesParameters.SpeciesDensity.AllSpecies[species.Index];
-                double biomass  = Math.Exp(SpeciesParameters.biomass_util.GetBiomassData(speciesdensity.BiomassClass, 1) + SpeciesParameters.biomass_util.GetBiomassData(speciesdensity.BiomassClass, 2) * Math.Log(Diameter)) * data.Treenumber / 1000.00; // Mg/cell
-                int biomass_int = System.Convert.ToInt32(biomass);
-                double biomass_gm2 = biomass * 1000 * 1000 / (EcoregionData.ModelCore.CellLength * EcoregionData.ModelCore.CellLength);
-                int biomass_gm2_int = System.Convert.ToInt32(biomass_gm2);
-                return biomass_gm2_int;
+                float bioCoef_1 = SpeciesParameters.biomass_util.GetBiomassData(speciesdensity.BiomassClass, 1);
+                float bioCoef_2 = SpeciesParameters.biomass_util.GetBiomassData(speciesdensity.BiomassClass, 2);
+                double biomass = Math.Exp(bioCoef_1 + bioCoef_2 * Math.Log(this.data.Diameter)) * 2.2046 * this.data.Treenumber;
+                return (int)biomass;
+
             }
         }
 
@@ -246,13 +248,29 @@ namespace Landis.Library.DensityCohorts
 
         //---------------------------------------------------------------------
 
+        //---------------------------------------------------------------------
+
+        public Cohort(ISpecies species,
+                      ushort age,
+                      int treenumber)
+        {
+            this.species = (ISpecies)species;
+            this.speciesDensity = SpeciesParameters.SpeciesDensity.AllSpecies[species.Index];
+            this.data.Age = age;
+            this.data.Treenumber = treenumber;
+            this.data.Diameter = 0;
+            this.data.Biomass = 0;
+        }
+
+        //---------------------------------------------------------------------
+
         public Cohort(Cohort cohort) // : base(cohort.species, new Landis.Library.BiomassCohorts.CohortData(cohort.age, cohort.Biomass))
         {
-            this.species = (ISpecies) cohort.species;
+            this.species = (ISpecies) cohort.Species;
             this.speciesDensity = SpeciesParameters.SpeciesDensity.AllSpecies[this.species.Index];
-            this.data.Age = cohort.age;
-            this.data.Treenumber = cohort.treenumber;
-            this.diameter = cohort.diameter;
+            this.data.Age = cohort.Age;
+            this.data.Treenumber = cohort.Treenumber;
+            this.diameter = cohort.Diameter;
             this.data.Biomass = cohort.Biomass;
         }
 
@@ -266,8 +284,37 @@ namespace Landis.Library.DensityCohorts
             ecoregion = siteEcoregion;
             this.data.Age = age;
             this.data.Treenumber = treenumber;
-            this.data.Biomass = this.Biomass;
-            this.data.Diameter = this.Diameter;
+            if (ecoregion.Active)
+            {
+                float diameter = 0;
+                Dictionary<int, double> diameters = DiameterInputs.AllData[ecoregion.Name][species.Name].Diameters;
+                if (diameters.ContainsKey(Age))
+                {
+                    diameter = (float)diameters[Age];
+                }
+                else
+                {
+                    for (int i = Age; i > 0; i--)
+                    {
+                        if (diameters.ContainsKey(i))
+                        {
+                            diameter = (float)diameters[i];
+                        }
+                    }
+                }
+                this.data.Diameter = diameter;
+                //FIXME ---- JSF
+                //ISpeciesDensity speciesdensity = SpeciesParameters.SpeciesDensity.AllSpecies[species.Index];
+                float bioCoef_1 = SpeciesParameters.biomass_util.GetBiomassData(this.speciesDensity.BiomassClass, 1);
+                float bioCoef_2 = SpeciesParameters.biomass_util.GetBiomassData(this.speciesDensity.BiomassClass, 2);
+                double biomass = Math.Exp(bioCoef_1 + bioCoef_2 * Math.Log(diameter)) * 2.2046 * this.data.Treenumber; // Mg/cell
+                //int biomass_int = System.Convert.ToInt32(biomass);
+                //double biomass_gm2 = biomass * 1000 * 1000 / (EcoregionData.ModelCore.CellLength * EcoregionData.ModelCore.CellLength);
+                //int biomass_gm2_int = System.Convert.ToInt32(biomass_gm2);
+                //this.data.Biomass = biomass_gm2_int;
+                this.data.Biomass = (int)biomass;
+            }
+
         }
 
         //---------------------------------------------------------------------
@@ -301,16 +348,30 @@ namespace Landis.Library.DensityCohorts
         {
             int newTreenumber = data.Treenumber + delta;
             data.Treenumber = System.Math.Max(0, newTreenumber);
+            //if (data.Treenumber == 0)
+            //{
+            //    RemoveCohort(cohort, null);
+            //}
             data.Biomass = this.Biomass;
+        }
+
+        //---------------------------------------------------------------------
+
+        public double ComputeCohortBasalArea(ICohort cohort)
+        {
+            double local_const = 3.1415926 / (4 * 10000.00);
+
+            double cohortBA = Math.Pow(cohort.Diameter, 2) * local_const * cohort.Treenumber;
+
+            return cohortBA;
         }
 
         //---------------------------------------------------------------------
 
         public int ComputeNonWoodyBiomass(ActiveSite site)
         {
-            //Percentage nonWoodyPercentage = Cohorts.BiomassCalculator.ComputeNonWoodyPercentage(this, site);
-            //return (int) (data.Biomass * nonWoodyPercentage);
-            return 0;
+            Percentage nonWoodyPercentage = Cohorts.BiomassCalculator.ComputeNonWoodyPercentage(this, site);
+            return (int)(data.Biomass * nonWoodyPercentage);
         }
 
         //---------------------------------------------------------------------

@@ -132,14 +132,14 @@ namespace Landis.Library.DensityCohorts.InitialCommunities
                     //JSF - Ask Brian about this, initialWoodBiomass is float, SpeciesCohorts receives int
                     foreach (ushort age_key in ageBio.Keys)
                     {
-                        uint initialWoodBiomass = ageBio[age_key];
-                        if (initialWoodBiomass <= 0.0)
+                        uint initialTree = ageBio[age_key];
+                        if (initialTree <= 0.0)
                             throw new InputValueException(speciesName.Value.String,
-                                                          "Cohort {0}, age {1} has zero or negative biomass, line {2}",
+                                                          "Cohort {0}, age {1} has zero or negative tree number, line {2}",
                                                           species.Name, age_key, lineNumber);
 
                         //JSF FIX speciesCohortsList.Add(new SpeciesCohorts(species, age_key, initialWoodBiomass, (float)0.0));
-                        speciesCohortsList.Add(new SpeciesCohorts(species, age_key, (int)initialWoodBiomass));
+                        speciesCohortsList.Add(new SpeciesCohorts(species, age_key, (int)initialTree));
                     }
                     
                     GetNextLine();

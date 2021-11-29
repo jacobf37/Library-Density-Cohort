@@ -7,7 +7,7 @@ namespace Landis.Library.DensityCohorts
     {
         public static SortedDictionary<string, Parameter<string>> parameters = new SortedDictionary<string, Parameter<string>>(StringComparer.InvariantCultureIgnoreCase); 
         
-        public const string ExtensionName = "PnET-Succession";
+        public const string ExtensionName = "DensityCohortLibrary";
         public const string PNEToutputsites = "PNEToutputsites";
         public const string EcoregionParameters = "EcoregionParameters";
         public const string DisturbanceReductions = "DisturbanceReductions";

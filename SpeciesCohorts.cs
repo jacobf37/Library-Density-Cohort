@@ -109,8 +109,8 @@ namespace Landis.Library.DensityCohorts
             this.species = species;
             this.cohortData = new List<CohortData>();
             this.isMaturePresent = false;
-            IEcoregion ecoregion = EcoregionData.ModelCore.Ecoregions.SkipWhile(Eco => !Eco.Active).First();
-            AddNewCohort(initialAge, initialTrees, ecoregion);
+            //IEcoregion ecoregion = EcoregionData.ModelCore.Ecoregions.SkipWhile(Eco => !Eco.Active).First();
+            AddNewCohort(initialAge, initialTrees);
 
         }
         //---------------------------------------------------------------------
@@ -153,6 +153,17 @@ namespace Landis.Library.DensityCohorts
 
         //---------------------------------------------------------------------
 
+        /// <summary>
+        /// Adds a new cohort.
+        /// </summary>
+        public void AddNewCohort(ushort age, int initialTrees)
+        {
+            CohortData newCohortData = new CohortData(age, initialTrees);
+            Cohort cohort = new Cohort(species, age, initialTrees);
+            this.cohortData.Add(newCohortData);
+        }
+
+        //---------------------------------------------------------------------
         /// <summary>
         /// Gets the age of a cohort at a specific index.
         /// </summary>

@@ -1,7 +1,5 @@
 //  Authors:  Robert M. Scheller, James B. Domingo
 
-using Landis.Core;
-using System.Collections.Generic;
 
 namespace Landis.Library.DensityCohorts
 {
@@ -12,6 +10,7 @@ namespace Landis.Library.DensityCohorts
     //Landis.Library.Cohorts.ISpeciesCohorts<Landis.Library.DensityCohorts.ICohort>, Landis.Library.BiomassCohorts.ISpeciesCohorts, Landis.Library.Cohorts.ISpeciesCohorts<Landis.Library.BiomassCohorts.ICohort>    
     {
 
+        
     }
     
 }

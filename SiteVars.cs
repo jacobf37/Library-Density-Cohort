@@ -6,6 +6,8 @@ using Landis.Core;
 using Landis.Library.DensityCohorts;
 using Landis.Library.AgeOnlyCohorts;
 using Landis.SpatialModeling;
+using Landis.Library.Metadata;
+
 
 namespace Landis.Library.DensityCohorts
 {
@@ -14,6 +16,8 @@ namespace Landis.Library.DensityCohorts
     {
         private static ISiteVar<float> siteRD;
         private static ISiteVar<Landis.Library.DensityCohorts.SiteCohorts> sitecohorts;
+
+        public static MetadataTable<SummaryLogMortality> summaryLogMortality;
 
         public static void Initialize()
         {

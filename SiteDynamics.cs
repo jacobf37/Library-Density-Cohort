@@ -71,7 +71,8 @@ namespace Landis.Library.DensityCohorts
 
                 if (SiteVars.SiteRD[siteCohorts.Site] > GSO4)
                 {
-                    Selfthinning(siteCohorts);
+                    SelfthinningTest(siteCohorts);
+                    SiteVars.TotalSiteRD(siteCohorts);
                 }
             }
         }
@@ -97,23 +98,32 @@ namespace Landis.Library.DensityCohorts
                 {
                     if (SpeciesParameters.SpeciesDensity.AllSpecies[cohort.Species.Index].SpType >= 0)
                     {
-                            double TmpMortality = Landis.Library.DensityCohorts.Cohorts.SuccessionTimeStep / 10 / (1.0 + Math.Exp(3.25309 - 0.00072647 * tmpDQ + 0.01668809 * cohort.Diameter / 2.54));
-                            TmpMortality = (1.0f < TmpMortality ? 1.0f : TmpMortality);
+                        double TmpMortality = Landis.Library.DensityCohorts.Cohorts.SuccessionTimeStep / 10 / (1.0 + Math.Exp(3.25309 - 0.00072647 * tmpDQ + 0.01668809 * cohort.Diameter / 2.54));
+                        TmpMortality = (1.0f < TmpMortality ? 1.0f : TmpMortality);
 
-                            double DeadTree = cohort.Treenumber * TmpMortality;
+                        double DeadTree = cohort.Treenumber * TmpMortality;
 
-                            Debug.Assert(DeadTree <= UINT_MAX && DeadTree >= 0);
+                        Debug.Assert(DeadTree <= UINT_MAX && DeadTree >= 0);
 
-                            int DeadTreeInt = (int)DeadTree;
+                        int DeadTreeInt = (int)DeadTree;
 
-                            //if (DeadTree - DeadTreeInt >= 0.0001)
-                            if (DeadTree > DeadTreeInt)
-                            {
-                                if (rand.NextDouble() < 0.1)
-                                    DeadTreeInt++;
-                            }
+                        //if (DeadTree - DeadTreeInt >= 0.0001)
+                        if (DeadTree > DeadTreeInt)
+                        {
+                            if (rand.NextDouble() < 0.1)
+                                DeadTreeInt++;
+                        }
 
+                        if (DeadTreeInt >= cohort.Treenumber)
+                        {
+                            siteCohorts.RemoveCohort((Cohort)cohort, null);
+                        }
+                        else if (DeadTreeInt > 0)
+                        {
                             cohort.ChangeTreenumber(-DeadTreeInt);
+                        }
+
+                        
 
                             tmpDQ -= Math.Pow(cohort.Diameter, 2) * DQ_const * DeadTree;
                     }
@@ -161,7 +171,14 @@ namespace Landis.Library.DensityCohorts
                                     DeadTreeInt++;
                             }
 
-                            cohort.ChangeTreenumber(-DeadTreeInt);
+                            if (DeadTreeInt >= cohort.Treenumber)
+                            {
+                                siteCohorts.RemoveCohort((Cohort)cohort, null);
+                            }
+                            else if (DeadTreeInt > 0)
+                            {
+                                cohort.ChangeTreenumber(-DeadTreeInt);
+                            }
 
                             tmpDQ -= Math.Pow(cohort.Diameter, 2) * DQ_const * DeadTree;
                         }
@@ -190,7 +207,9 @@ namespace Landis.Library.DensityCohorts
                 cohortMortality.Add(i, mort);
             }
 
-            var sortedMortality = (cohortMortality.OrderByDescending(o => o.Key).ToDictionary(o => o.Key, o => o.Value));
+
+            var sortedDict = from entry in cohortMortality orderby entry.Value descending select entry;
+            var sortedMortality = sortedDict.ToDictionary(pair => pair.Key, pair => pair.Value);
 
             double countRD = targetRD;
             
@@ -198,12 +217,77 @@ namespace Landis.Library.DensityCohorts
             {
                 int deadTrees = (int)Math.Round(item.Value * siteCohorts.AllCohorts[item.Key].Treenumber);
                 float deadRD = computeMortalityRD(siteCohorts.AllCohorts[item.Key], deadTrees);
+                
+                if (deadTrees > 0)
+                {
+                    SiteVars.summaryLogMortality.Clear();
+                    SummaryLogMortality slm = new SummaryLogMortality();
+
+                    slm.Time = EcoregionData.ModelCore.CurrentTime;
+                    slm.SiteIndex = siteCohorts.Site.DataIndex;
+                    slm.EcoName = siteCohorts.Ecoregion.Name;
+                    slm.Species = siteCohorts.AllCohorts[item.Key].Species.Name;
+                    slm.Age = siteCohorts.AllCohorts[item.Key].Age;
+                    slm.TreeNumber = deadTrees;
+                    slm.Diameter = Math.Round(siteCohorts.AllCohorts[item.Key].Diameter, 1);
+                    slm.MortalityCause = "Competition";
+
+                    SiteVars.summaryLogMortality.AddObject(slm);
+                    SiteVars.summaryLogMortality.WriteToFile();
+                }
+
                 siteCohorts.AllCohorts[item.Key].ChangeTreenumber(-deadTrees);
                 countRD -= deadRD;
                 if (countRD < 0) break;
             }
             
         }
+
+        // Self thinning test
+
+        public static void SelfthinningTest(Landis.Library.DensityCohorts.SiteCohorts siteCohorts)
+        {
+            double targetRD = SiteVars.SiteRD[siteCohorts.Site] - EcoregionData.GSO4[siteCohorts.Ecoregion];
+            double qmd = siteCohorts.siteQMD;
+            float[] shadeArray = new float[] { 0.0f, 0.1f, 0.3f, 0.5f, 0.7f, 0.9f };
+            //SortedList<double, Landis.Library.DensityCohorts.ICohort> cohortMortality = new SortedList<double, Library.DensityCohorts.ICohort>();
+            SortedDictionary<int, double> cohortMortality = new SortedDictionary<int, double>();
+
+            for (int i = 0; i < siteCohorts.AllCohorts.Count; i++)
+            {
+                double reldia = siteCohorts.AllCohorts[i].Diameter / qmd;
+                double mort = (0.84525 - (0.01074 * reldia) + (0.0000002 * Math.Pow(reldia, 3))) * (1 - shadeArray[siteCohorts.AllCohorts[i].Species.ShadeTolerance]);
+                cohortMortality.Add(i, mort);
+            }
+
+
+            var sortedDict = from entry in cohortMortality orderby entry.Value descending select entry;
+            var sortedMortality = sortedDict.ToDictionary(pair => pair.Key, pair => pair.Value);
+
+            double countRD = targetRD;
+
+            Random randomNumber = new Random();
+
+            while (countRD > 0)
+            {
+                foreach (KeyValuePair<int, double> item in sortedMortality)
+                {
+                    if (siteCohorts.AllCohorts[item.Key].Treenumber <= 0 || countRD <= 0) { continue; }
+                    if (randomNumber.NextDouble() < item.Value)
+                    {
+                        int deadTrees = 1;
+                        float deadRD = computeMortalityRD(siteCohorts.AllCohorts[item.Key], deadTrees);
+
+                        siteCohorts.AllCohorts[item.Key].ChangeTreenumber(-deadTrees);
+                        
+                        countRD -= deadRD;
+                    }
+                }
+            }
+
+        }
+
+        //==========================================================================================================
 
         public static float computeMortalityRD(Landis.Library.DensityCohorts.ICohort cohort, int deadTrees)
         {
