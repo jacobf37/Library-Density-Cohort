@@ -274,13 +274,7 @@ namespace Landis.Library.DensityCohorts
             var sortedDict = from entry in cohortMortality orderby entry.Value descending select entry;
             var sortedMortality = sortedDict.ToDictionary(pair => pair.Key, pair => pair.Value);
             Dictionary<int, Cohort> deathCohorts = new Dictionary<int, Cohort>();
-            Dictionary<int, int[]> newSnagDictionary = new Dictionary<int, int[]>()
-            {
-                {1, new int[]{0,0,0,0 } },
-                {2, new int[]{0,0,0,0 } },
-                {3, new int[]{0,0,0,0 } },
-                {4, new int[]{0,0,0,0 } } 
-            };
+
 
 
             double countRD = targetRD;
@@ -310,17 +304,7 @@ namespace Landis.Library.DensityCohorts
                 }
             }
 
-            foreach (KeyValuePair<int, int[]> item in newSnagDictionary)
-            {
-                for (int i = 0; i < item.Value.Length; i++)
-                {
-                    if (item.Value[i] > 0)
-                    {
-                        SiteVars.SnagCohorts[siteCohorts.Site].AddNewCohort(item.Key, 0, i, item.Value[i]);
 
-                    }
-                }
-            }
 
                 foreach (KeyValuePair<int, Cohort> item in deathCohorts)
             {
