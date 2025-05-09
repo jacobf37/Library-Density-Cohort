@@ -28,6 +28,6 @@ namespace Landis.Library.DensityCohorts
         // Coefficient used to estimate carbon content within biomass
         float CarbonCoef { get; }
 
-        int SnagType { get; }
+
     }
 }

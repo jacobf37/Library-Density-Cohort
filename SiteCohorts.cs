@@ -12,7 +12,6 @@ using System.Linq;
 //using Landis.Library.Climate;
 using Landis.Library.Cohorts;
 using AgeCohort = Landis.Library.AgeOnlyCohorts;
-using Landis.Library.SnagCohorts;
 
 namespace Landis.Library.DensityCohorts
 {
@@ -41,9 +40,6 @@ namespace Landis.Library.DensityCohorts
         private static byte Timestep;
         //private static int CohortBinSize;
 
-        //--------------------------Snags--------------------------
-        private static ISiteVar<SiteSnagCohorts> sitesnagcohorts;
-        //---------------------------------------------------------------------
 
         /// <summary>
         /// Occurs when a site is disturbed by an age-only disturbance.
@@ -286,7 +282,6 @@ namespace Landis.Library.DensityCohorts
         public bool Grow(ActiveSite site, bool isSuccessionTimestep)
         {
 
-            SiteSnagCohorts sitesnagcohorts = (SiteSnagCohorts)SiteVars.SnagCohorts[site];
             SiteVars.TotalSiteRD(this);
             SiteDynamics.siteSuccession(this);
             

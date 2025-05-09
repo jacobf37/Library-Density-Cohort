@@ -9,7 +9,6 @@ using Landis.Library.AgeOnlyCohorts;
 using Landis.SpatialModeling;
 using System.Linq;
 using Landis.Library.BiomassCohorts;
-using Landis.Library.SnagCohorts;
 
 
 namespace Landis.Library.DensityCohorts
@@ -21,7 +20,6 @@ namespace Landis.Library.DensityCohorts
         private List<int> SpecIndexArray = new List<int>();
         private List<int> AgeIndexArray = new List<int>();
 
-        private static Library.SnagCohorts.Dataset snagSpeciesDataset;
         public static void siteSuccession(Landis.Library.DensityCohorts.SiteCohorts siteCohorts)
         {
             //List<ISpeciesDensity> speciesDensity = SpeciesParameters.SpeciesDensity.AllSpecies;
@@ -122,7 +120,6 @@ namespace Landis.Library.DensityCohorts
 
                         if (DeadTreeInt >= cohort.Treenumber)
                         {
-                            SiteVars.SnagCohorts[siteCohorts.Site].AddNewCohort(SpeciesParameters.SpeciesDensity.AllSpecies[cohort.Species.Index].SnagType, 0, SnagDiameter(cohort.Diameter), cohort.Treenumber);
                             siteCohorts.RemoveCohort((Cohort)cohort, null);
                             
 
@@ -130,7 +127,6 @@ namespace Landis.Library.DensityCohorts
                         else if (DeadTreeInt > 0)
                         {
                             cohort.ChangeTreenumber(-DeadTreeInt);
-                            SiteVars.SnagCohorts[siteCohorts.Site].AddNewCohort(SpeciesParameters.SpeciesDensity.AllSpecies[cohort.Species.Index].SnagType, 0, SnagDiameter(cohort.Diameter), DeadTreeInt);
 
                         }
 
@@ -185,13 +181,11 @@ namespace Landis.Library.DensityCohorts
                             if (DeadTreeInt >= cohort.Treenumber)
                             {
                                 siteCohorts.RemoveCohort((Cohort)cohort, null);
-                                SiteVars.SnagCohorts[siteCohorts.Site].AddNewCohort(SpeciesParameters.SpeciesDensity.AllSpecies[cohort.Species.Index].SnagType, 0, SnagDiameter(cohort.Diameter), cohort.Treenumber);
 
                             }
                             else if (DeadTreeInt > 0)
                             {
                                 cohort.ChangeTreenumber(-DeadTreeInt);
-                                SiteVars.SnagCohorts[siteCohorts.Site].AddNewCohort(SpeciesParameters.SpeciesDensity.AllSpecies[cohort.Species.Index].SnagType, 0, SnagDiameter(cohort.Diameter), DeadTreeInt);
 
                             }
 
@@ -311,10 +305,6 @@ namespace Landis.Library.DensityCohorts
                         float deadRD = computeMortalityRD(siteCohorts.AllCohorts[item.Key], deadTrees);
 
                         siteCohorts.AllCohorts[item.Key].ChangeTreenumber(-deadTrees);
-                        //SiteVars.SnagCohorts[siteCohorts.Site].AddNewCohort(siteCohorts.AllCohorts[item.Key].DensitySpecies.SnagType, 0, siteCohorts.AllCohorts[item.Key].Diameter, deadTrees);
-                        int tempDia = SnagDiameter(siteCohorts.AllCohorts[item.Key].Diameter);
-                        int tempVar = newSnagDictionary[siteCohorts.AllCohorts[item.Key].DensitySpecies.SnagType][tempDia];
-                        newSnagDictionary[siteCohorts.AllCohorts[item.Key].DensitySpecies.SnagType][tempDia] = tempVar + deadTrees;
                         countRD -= deadRD;
                     }
                 }
@@ -386,28 +376,5 @@ namespace Landis.Library.DensityCohorts
             return RDflag;
         }
 
-        public static int SnagDiameter(float diameter)
-        {
-            if (diameter <= 30)
-            {
-                return 0;
-            }
-            else if (diameter > 30 && diameter <= 45)
-            {
-                return 1;
-            }
-            else if (diameter > 45 && diameter <= 60)
-            {
-                return 2;
-            }
-            else if (diameter > 60)
-            {
-                return 3;
-            }
-            else
-            {
-                throw new System.Exception("Error in snag diameter function");
-            }
-        }
     }
 }

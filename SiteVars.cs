@@ -8,7 +8,6 @@ using Landis.Library.AgeOnlyCohorts;
 using Landis.SpatialModeling;
 using Landis.Library.Metadata;
 using System.Reflection;
-using Landis.Library.SnagCohorts;
 using System.Linq;
 
 
@@ -23,7 +22,6 @@ namespace Landis.Library.DensityCohorts
         public static MetadataTable<SummaryLogMortality> summaryLogMortality;
 
         public static ISiteVar<double> fineFuels;
-        public static ISiteVar<ISiteSnagCohorts> SnagCohorts { get; private set; }
 
         public static void Initialize()
         {
@@ -36,10 +34,6 @@ namespace Landis.Library.DensityCohorts
             
         }
 
-        public static void InitializeSnags()
-        {
-            SnagCohorts = EcoregionData.ModelCore.GetSiteVar<ISiteSnagCohorts>("Succession.SnagCohorts");
-        }
         public static void SpeciesSiteRD(Landis.Library.DensityCohorts.SpeciesCohorts speciesCohorts, ActiveSite site)
         {
             float siteRD = 0;
