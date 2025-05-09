@@ -24,6 +24,8 @@ namespace Landis.Library.DensityCohorts
         public const string DynamicInputFile = "DynamicInputFile";
         public const string DynamicEcoregionFile = "DynamicEcoregionFile";
         public const string DiameterInputFile = "DiameterInputFile";
+        //public const string SnagInputFile = "SnagInputFile";
+
 
         //Ecoregion parameters
         public const string Latitude = "Latitude";

@@ -8,6 +8,8 @@ using Landis.Library.DensityCohorts;
 using Landis.Library.AgeOnlyCohorts;
 using Landis.SpatialModeling;
 using System.Linq;
+using Landis.Library.BiomassCohorts;
+using Landis.Library.SnagCohorts;
 
 
 namespace Landis.Library.DensityCohorts
@@ -19,8 +21,12 @@ namespace Landis.Library.DensityCohorts
         private List<int> SpecIndexArray = new List<int>();
         private List<int> AgeIndexArray = new List<int>();
 
+        private static Library.SnagCohorts.Dataset snagSpeciesDataset;
         public static void siteSuccession(Landis.Library.DensityCohorts.SiteCohorts siteCohorts)
         {
+            //List<ISpeciesDensity> speciesDensity = SpeciesParameters.SpeciesDensity.AllSpecies;
+            //ISnagSpecies snag_species = snagSpeciesDataset[1];
+
             int RDflag;
 
             float siteRD = SiteVars.SiteRD[siteCohorts.Site];
@@ -28,7 +34,7 @@ namespace Landis.Library.DensityCohorts
             double GSO2 = EcoregionData.GSO2[siteCohorts.Ecoregion];
             double GSO3 = EcoregionData.GSO3[siteCohorts.Ecoregion];
             double GSO4 = EcoregionData.GSO4[siteCohorts.Ecoregion];
-
+            SiteVars.TotalSiteFineFuels(siteCohorts);
             if (siteRD < GSO1)
             {
                 RDflag = 0;
@@ -116,16 +122,21 @@ namespace Landis.Library.DensityCohorts
 
                         if (DeadTreeInt >= cohort.Treenumber)
                         {
+                            SiteVars.SnagCohorts[siteCohorts.Site].AddNewCohort(SpeciesParameters.SpeciesDensity.AllSpecies[cohort.Species.Index].SnagType, 0, SnagDiameter(cohort.Diameter), cohort.Treenumber);
                             siteCohorts.RemoveCohort((Cohort)cohort, null);
+                            
+
                         }
                         else if (DeadTreeInt > 0)
                         {
                             cohort.ChangeTreenumber(-DeadTreeInt);
+                            SiteVars.SnagCohorts[siteCohorts.Site].AddNewCohort(SpeciesParameters.SpeciesDensity.AllSpecies[cohort.Species.Index].SnagType, 0, SnagDiameter(cohort.Diameter), DeadTreeInt);
+
                         }
 
-                        
 
-                            tmpDQ -= Math.Pow(cohort.Diameter, 2) * DQ_const * DeadTree;
+
+                        tmpDQ -= Math.Pow(cohort.Diameter, 2) * DQ_const * DeadTree;
                     }
                         else
                         {
@@ -174,10 +185,14 @@ namespace Landis.Library.DensityCohorts
                             if (DeadTreeInt >= cohort.Treenumber)
                             {
                                 siteCohorts.RemoveCohort((Cohort)cohort, null);
+                                SiteVars.SnagCohorts[siteCohorts.Site].AddNewCohort(SpeciesParameters.SpeciesDensity.AllSpecies[cohort.Species.Index].SnagType, 0, SnagDiameter(cohort.Diameter), cohort.Treenumber);
+
                             }
                             else if (DeadTreeInt > 0)
                             {
                                 cohort.ChangeTreenumber(-DeadTreeInt);
+                                SiteVars.SnagCohorts[siteCohorts.Site].AddNewCohort(SpeciesParameters.SpeciesDensity.AllSpecies[cohort.Species.Index].SnagType, 0, SnagDiameter(cohort.Diameter), DeadTreeInt);
+
                             }
 
                             tmpDQ -= Math.Pow(cohort.Diameter, 2) * DQ_const * DeadTree;
@@ -257,12 +272,22 @@ namespace Landis.Library.DensityCohorts
             {
                 double reldia = siteCohorts.AllCohorts[i].Diameter / qmd;
                 double mort = (0.84525 - (0.01074 * reldia) + (0.0000002 * Math.Pow(reldia, 3))) * (1 - shadeArray[siteCohorts.AllCohorts[i].Species.ShadeTolerance]);
+                if (mort <= 0.0) { mort = 0.01; }
                 cohortMortality.Add(i, mort);
             }
 
 
             var sortedDict = from entry in cohortMortality orderby entry.Value descending select entry;
             var sortedMortality = sortedDict.ToDictionary(pair => pair.Key, pair => pair.Value);
+            Dictionary<int, Cohort> deathCohorts = new Dictionary<int, Cohort>();
+            Dictionary<int, int[]> newSnagDictionary = new Dictionary<int, int[]>()
+            {
+                {1, new int[]{0,0,0,0 } },
+                {2, new int[]{0,0,0,0 } },
+                {3, new int[]{0,0,0,0 } },
+                {4, new int[]{0,0,0,0 } } 
+            };
+
 
             double countRD = targetRD;
 
@@ -270,21 +295,47 @@ namespace Landis.Library.DensityCohorts
 
             while (countRD > 0)
             {
+                if (sortedMortality.Count == 0) { break; }
                 foreach (KeyValuePair<int, double> item in sortedMortality)
                 {
-                    if (siteCohorts.AllCohorts[item.Key].Treenumber <= 0 || countRD <= 0) { continue; }
+                    if (siteCohorts.AllCohorts[item.Key].Treenumber <= 0) 
+                    { 
+                        sortedMortality.Remove(item.Key);
+                        deathCohorts.Add(item.Key, siteCohorts.AllCohorts[item.Key]);
+                        continue;
+                    }
+
                     if (randomNumber.NextDouble() < item.Value)
                     {
                         int deadTrees = 1;
                         float deadRD = computeMortalityRD(siteCohorts.AllCohorts[item.Key], deadTrees);
 
                         siteCohorts.AllCohorts[item.Key].ChangeTreenumber(-deadTrees);
-                        
+                        //SiteVars.SnagCohorts[siteCohorts.Site].AddNewCohort(siteCohorts.AllCohorts[item.Key].DensitySpecies.SnagType, 0, siteCohorts.AllCohorts[item.Key].Diameter, deadTrees);
+                        int tempDia = SnagDiameter(siteCohorts.AllCohorts[item.Key].Diameter);
+                        int tempVar = newSnagDictionary[siteCohorts.AllCohorts[item.Key].DensitySpecies.SnagType][tempDia];
+                        newSnagDictionary[siteCohorts.AllCohorts[item.Key].DensitySpecies.SnagType][tempDia] = tempVar + deadTrees;
                         countRD -= deadRD;
                     }
                 }
             }
 
+            foreach (KeyValuePair<int, int[]> item in newSnagDictionary)
+            {
+                for (int i = 0; i < item.Value.Length; i++)
+                {
+                    if (item.Value[i] > 0)
+                    {
+                        SiteVars.SnagCohorts[siteCohorts.Site].AddNewCohort(item.Key, 0, i, item.Value[i]);
+
+                    }
+                }
+            }
+
+                foreach (KeyValuePair<int, Cohort> item in deathCohorts)
+            {
+                siteCohorts.RemoveCohort((Cohort)item.Value, null);
+            }
         }
 
         //==========================================================================================================
@@ -298,6 +349,65 @@ namespace Landis.Library.DensityCohorts
             int tmp_term3 = deadTrees;
             float deadRD = tmp_term1 * tmp_term2 * tmp_term3 / (float)Math.Pow(EcoregionData.ModelCore.CellLength, 2);
             return deadRD;
+        }
+
+        public static int computeShade(SiteCohorts siteCohorts)
+        {
+            int RDflag;
+
+            float siteRD = SiteVars.SiteRD[siteCohorts.Site];
+            double GSO1 = EcoregionData.GSO1[siteCohorts.Ecoregion];
+            double GSO2 = EcoregionData.GSO2[siteCohorts.Ecoregion];
+            double GSO3 = EcoregionData.GSO3[siteCohorts.Ecoregion];
+            double GSO4 = EcoregionData.GSO4[siteCohorts.Ecoregion];
+            //SiteVars.TotalSiteFineFuels(siteCohorts);
+            if (siteRD < GSO1)
+            {
+                RDflag = 1;
+            }
+            else if (siteRD >= GSO1 && siteRD < GSO2)
+            {
+                RDflag = 2;
+            }
+            else if (siteRD >= GSO2 && siteRD <= GSO3)
+            {
+                RDflag = 3;
+            }
+            else if (siteRD > GSO3 && siteRD <= GSO4)
+            {
+                RDflag = 4;
+            }
+            else
+            {
+                Debug.Assert(siteRD > GSO4);
+                RDflag = 5;
+            }
+
+            return RDflag;
+        }
+
+        public static int SnagDiameter(float diameter)
+        {
+            if (diameter <= 30)
+            {
+                return 0;
+            }
+            else if (diameter > 30 && diameter <= 45)
+            {
+                return 1;
+            }
+            else if (diameter > 45 && diameter <= 60)
+            {
+                return 2;
+            }
+            else if (diameter > 60)
+            {
+                return 3;
+            }
+            else
+            {
+                throw new System.Exception("Error in snag diameter function");
+            }
         }
     }
 }

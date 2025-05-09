@@ -1,5 +1,6 @@
 //  Authors:  Robert M. Scheller, James B. Domingo
 
+using Landis.Core;
 using Landis.SpatialModeling;
 
 namespace Landis.Library.DensityCohorts
@@ -8,7 +9,8 @@ namespace Landis.Library.DensityCohorts
     /// A species cohort with number of tree information.
     /// </summary>
     public interface ICohort
-        :BiomassCohorts.ICohort, Landis.Library.AgeOnlyCohorts.ICohort
+    //    : Landis.Library.AgeOnlyCohorts.ICohort, BiomassCohorts.ICohort, Landis.Library.Cohorts.ICohort
+    :BiomassCohorts.ICohort, Landis.Library.AgeOnlyCohorts.ICohort
     {
         /// <summary>
         /// The number of individual trees in the cohort.
@@ -28,10 +30,21 @@ namespace Landis.Library.DensityCohorts
             get;
         }
 
-       // ushort Age
-        //{
-        //    get;
-        //}
+        CohortData Data
+        {
+            get;
+        }
+
+        ushort Age
+        {
+            get;
+        }
+
+        ISpecies Species 
+        { 
+            get; 
+        }
+
         //---------------------------------------------------------------------
 
         /// <summary>
@@ -43,6 +56,8 @@ namespace Landis.Library.DensityCohorts
         float ComputeCohortRD(Cohort cohort);
 
         double ComputeCohortBasalArea(ICohort cohort);
+
+        int ComputeCohortBiomass(ICohort cohort);
 
         int ComputeNonWoodyBiomass(ActiveSite site);
 

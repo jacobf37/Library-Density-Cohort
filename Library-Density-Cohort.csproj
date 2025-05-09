@@ -25,7 +25,7 @@
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<!--<OutputPath>C:\BRM\LANDIS_II\GitCode\brmiranda\Core-Model-v7\Tool-Console\src\bin\extensions</OutputPath>-->
-		<OutputPath>C:\Users\jacobfraser\source\repos\Core-Model-v7\Tool-Console\src\bin\extensions</OutputPath>
+		<OutputPath>..\..\Core-Model-v7\Tool-Console\src\bin\extensions</OutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -39,7 +39,7 @@
 			<HintPath>..\..\Support-Library-Dlls-v7\Landis.Library.BiomassCohorts-v3.dll</HintPath>
 		</Reference>
 		<Reference Include="Landis.Library.Climate-v4">
-			<HintPath>..\..\Support-Library-Dlls-v7\Landis.Library.Climate-v4.dll</HintPath>
+			<HintPath>D:\UserProfile\source\repos\Core-Model-v7\Tool-Console\src\bin\extensions\Landis.Library.Climate-v4.4.dll</HintPath>
 		</Reference>
 		<Reference Include="Landis.Library.Cohorts-v2">
 			<HintPath>..\..\Support-Library-Dlls-v7\Landis.Library.Cohorts-v2.dll</HintPath>
@@ -57,6 +57,9 @@
 		<Reference Include="Landis.Library.Succession-v9">
 			<HintPath>..\..\Core-Model-v7\Tool-Console\src\bin\extensions\Landis.Library.Succession-v9.dll</HintPath>
 			<!--<HintPath>..\..\brmiranda\Core-Model-v7\Tool-Console\src\bin\extensions\Landis.Library.Succession-v9.dll</HintPath>-->
+		</Reference>
+		<Reference Include="Landis.Library.SnagCohorts-v1">
+			<HintPath>..\..\Core-Model-v7\Tool-Console\src\bin\extensions\Landis.Library.SnagCohorts-v1.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 

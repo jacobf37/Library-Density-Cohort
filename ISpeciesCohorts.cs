@@ -7,9 +7,9 @@ namespace Landis.Library.DensityCohorts
     /// </summary>
     public interface ISpeciesCohorts
          : Landis.Library.Cohorts.ISpeciesCohorts<ICohort>
-    //Landis.Library.Cohorts.ISpeciesCohorts<Landis.Library.DensityCohorts.ICohort>, Landis.Library.BiomassCohorts.ISpeciesCohorts, Landis.Library.Cohorts.ISpeciesCohorts<Landis.Library.BiomassCohorts.ICohort>    
+    //:Landis.Library.Cohorts.ISpeciesCohorts<Landis.Library.DensityCohorts.ICohort>, Landis.Library.BiomassCohorts.ISpeciesCohorts, Landis.Library.Cohorts.ISpeciesCohorts<Landis.Library.BiomassCohorts.ICohort>    
     {
-
+        int TotalBiomass { get; }
         
     }
     

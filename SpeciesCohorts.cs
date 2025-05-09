@@ -44,6 +44,16 @@ namespace Landis.Library.DensityCohorts
 
         //---------------------------------------------------------------------
 
+        public int TotalBiomass
+        {
+            get
+            {
+                return cohortData.Sum(o => o.Biomass);
+            }
+        }
+
+        //---------------------------------------------------------------------
+
         public ISpecies Species
         {
             get {
@@ -350,14 +360,16 @@ namespace Landis.Library.DensityCohorts
                 }
 
                 ISpeciesDensity speciesdensity = SpeciesParameters.SpeciesDensity.AllSpecies[species.Index];
-                double biomass_dbl = Math.Exp(SpeciesParameters.biomass_util.GetBiomassData(speciesdensity.BiomassClass, 1) + SpeciesParameters.biomass_util.GetBiomassData(speciesdensity.BiomassClass, 2) * Math.Log(diameter)) * cohortData[i].Treenumber / 1000.00; // Mg/cell
-                int biomass_int = System.Convert.ToInt32(biomass_dbl);
-                double biomass_gm2 = biomass_dbl * 1000 * 1000 / (EcoregionData.ModelCore.CellLength * EcoregionData.ModelCore.CellLength);
-                int biomass_gm2_int = System.Convert.ToInt32(biomass_gm2);
+                float bioCoef_1 = SpeciesParameters.biomass_util.GetBiomassData(speciesdensity.BiomassClass, 1);
+                float bioCoef_2 = SpeciesParameters.biomass_util.GetBiomassData(speciesdensity.BiomassClass, 2);
+                double biomass = Math.Exp(bioCoef_1 + (bioCoef_2 * Math.Log(diameter))) * cohortData[i].Treenumber; // Mg/cell
+                double biomass_gm2 = biomass * 1000 / (EcoregionData.ModelCore.CellLength * EcoregionData.ModelCore.CellLength);
+                int biomass_gm2_int = Math.Max(System.Convert.ToInt32(biomass_gm2), 1);
                 CohortData newCohortData = new CohortData(cohortData[i].Age, cohortData[i].Treenumber);
                 newCohortData.Biomass = biomass_gm2_int;
                 newCohortData.Diameter = diameter;
                 cohortData[i] = newCohortData;
+
             }
         }
         //---------------------------------------------------------------------

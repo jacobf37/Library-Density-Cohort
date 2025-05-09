@@ -59,6 +59,7 @@ namespace Landis.Library.DensityCohorts
         private int _maxsdi;
         private int _totalseed;
         private float _carboncoef;
+        private int _snagtype;
 
         # endregion
 
@@ -72,6 +73,7 @@ namespace Landis.Library.DensityCohorts
         private static Landis.Library.Parameters.Species.AuxParm<int> maxsdi;
         private static Landis.Library.Parameters.Species.AuxParm<int> totalseed;
         private static Landis.Library.Parameters.Species.AuxParm<float> carboncoef;
+        private static Landis.Library.Parameters.Species.AuxParm<int> snagtype;
 
         #endregion
 
@@ -85,6 +87,7 @@ namespace Landis.Library.DensityCohorts
             maxsdi = ((Landis.Library.Parameters.Species.AuxParm<int>)(Parameter<int>)SpeciesParameters.GetParameter("maxsdi"));
             totalseed = ((Landis.Library.Parameters.Species.AuxParm<int>)(Parameter<int>)SpeciesParameters.GetParameter("totalseed"));
             carboncoef = ((Landis.Library.Parameters.Species.AuxParm<float>)(Parameter<float>)SpeciesParameters.GetParameter("carboncoef"));
+            snagtype = ((Landis.Library.Parameters.Species.AuxParm<int>)(Parameter<int>)SpeciesParameters.GetParameter("snagtype"));
             #endregion
 
             SpeciesCombinations = new List<Tuple<ISpecies, ISpeciesDensity>>();
@@ -138,6 +141,7 @@ namespace Landis.Library.DensityCohorts
             _maxsdi = maxsdi[species];
             _totalseed = totalseed[species];
             _carboncoef = carboncoef[species];
+            _snagtype = snagtype[species];
             index = species.Index;
             name = species.Name;
             maxSproutAge = species.MaxSproutAge;
@@ -205,6 +209,13 @@ namespace Landis.Library.DensityCohorts
             }
         }
 
+        public int SnagType
+        {
+            get
+            {
+                return _snagtype;
+            }
+        }
         public int Index
         {
             get

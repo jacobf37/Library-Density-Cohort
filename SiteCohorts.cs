@@ -9,9 +9,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Landis.Library.Climate;
+//using Landis.Library.Climate;
 using Landis.Library.Cohorts;
 using AgeCohort = Landis.Library.AgeOnlyCohorts;
+using Landis.Library.SnagCohorts;
 
 namespace Landis.Library.DensityCohorts
 {
@@ -39,6 +40,10 @@ namespace Landis.Library.DensityCohorts
 
         private static byte Timestep;
         //private static int CohortBinSize;
+
+        //--------------------------Snags--------------------------
+        private static ISiteVar<SiteSnagCohorts> sitesnagcohorts;
+        //---------------------------------------------------------------------
 
         /// <summary>
         /// Occurs when a site is disturbed by an age-only disturbance.
@@ -270,9 +275,18 @@ namespace Landis.Library.DensityCohorts
             }
         }
 
+
+        public bool Shade(ActiveSite site, ISpecies species)
+        {
+            int maxShade = SiteDynamics.computeShade(this);
+            if (species.ShadeTolerance >= maxShade) return true;
+            else return false;
+
+        }
         public bool Grow(ActiveSite site, bool isSuccessionTimestep)
         {
-            
+
+            SiteSnagCohorts sitesnagcohorts = (SiteSnagCohorts)SiteVars.SnagCohorts[site];
             SiteVars.TotalSiteRD(this);
             SiteDynamics.siteSuccession(this);
             
@@ -477,7 +491,54 @@ namespace Landis.Library.DensityCohorts
                     return reduction.Sum();
         }
 
-        public int ReduceOrKillBiomassCohorts(Landis.Library.BiomassCohorts.IDisturbance disturbance)
+        public int ReduceOrKillBiomassCohorts(IDisturbance disturbance)
+        {
+            List<int> reduction = new List<int>();
+
+            List<Cohort> ToRemove = new List<Cohort>();
+
+            foreach (List<Cohort> species_cohort in cohorts.Values)
+            {
+                //Landis.Library.DensityCohorts.SpeciesCohorts species_cohorts = GetSpeciesCohort(cohorts[species_cohort[0].Species]);
+                foreach (Landis.Library.DensityCohorts.ICohort cohort in (IEnumerable<Landis.Library.DensityCohorts.ICohort>)species_cohort)
+                //for (int c =0;c< species_cohort.Count(); c++)
+                {
+                    //FIXME - JSF
+                    //Landis.Library.BiomassCohorts.ICohort biocohort = (Library.BiomassCohorts.ICohort) cohort;
+                    //int _reduction = disturbance.ReduceOrKillMarkedCohort(biocohort);
+                    // Disturbances return reduction in aboveground biomass
+                    int tmp_cohortBiomass = cohort.Biomass;
+                    int tmp_cohortDataBiomass = cohort.Data.Biomass;
+                    int _reduction = disturbance.ReduceOrKillMarkedCohort(cohort);
+
+                    double reductionProp = (double)_reduction / Math.Max((double)cohort.Biomass, 1);
+                    int treeRemoval = (int)Math.Round(cohort.Treenumber * reductionProp);
+                    reduction.Add(treeRemoval);
+                    if (reduction[reduction.Count() - 1] >= cohort.Treenumber)  //Compare to existing number of trees
+                    {
+                        ToRemove.Add((Cohort)cohort);
+                        // Edited by BRM - 090115
+                    }
+                    else
+                    {
+                        //FIXME compute treenumber reduction from disturbance reduction
+                        //Proportion of aboveground biomass
+                        cohort.ChangeTreenumber(-treeRemoval);  // Reduction applies to all biomass
+                    }
+                    //
+                }
+
+            }
+
+            foreach (Cohort cohort in ToRemove)
+            {
+                RemoveCohort(cohort, disturbance.Type);
+            }
+
+            return reduction.Sum();
+        }
+
+        public int ReduceOrKillBiomassCohorts(Library.BiomassCohorts.IDisturbance disturbance)
         {
             List<int> reduction = new List<int>();
 

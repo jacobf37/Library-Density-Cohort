@@ -51,6 +51,8 @@ namespace Landis.Library.DensityCohorts
         /// </returns>
         int ReduceOrKillDensityCohorts(IDisturbance disturbance);
 
+        int ReduceOrKillBiomassCohorts(IDisturbance disturbance);
+
         void RemoveMarkedCohorts(ISpeciesCohortsDisturbance disturbance);
 
         void RemoveMarkedCohorts(ICohortDisturbance disturbance);
