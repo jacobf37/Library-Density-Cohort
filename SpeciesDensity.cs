@@ -146,8 +146,6 @@ namespace Landis.Library.DensityCohorts
             maxSeedDist = species.MaxSeedDist;
             effectiveSeedDist = species.EffectiveSeedDist;
             vegReprodProb = species.VegReprodProb;
-            fireTolerance = species.FireTolerance;
-            shadeTolerance = species.ShadeTolerance;
             maturity = species.Maturity;
             longevity = species.Longevity;
 
@@ -309,6 +307,11 @@ namespace Landis.Library.DensityCohorts
             }
         }
 
+        public string FullName
+        {
+            get;
+            set;
+        }
     }
 
     class Tuple<T1, T2>

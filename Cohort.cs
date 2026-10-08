@@ -5,6 +5,7 @@ using Landis.SpatialModeling;
 using Landis.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 
 
 namespace Landis.Library.DensityCohorts
@@ -13,8 +14,7 @@ namespace Landis.Library.DensityCohorts
     /// A species cohort with density information.
     /// </summary>
     public class Cohort
-        : Landis.Library.DensityCohorts.ICohort
-        //Landis.Library.DensityCohorts.ICohort, Landis.Library.AgeOnlyCohorts.ICohort, Landis.Library.BiomassCohorts.ICohort
+        : Landis.Library.UniversalCohorts.Cohort, ICohort
     {
 
         private ISpecies species;
@@ -157,6 +157,10 @@ namespace Landis.Library.DensityCohorts
             get {
                 return data;
             }
+            set
+            {
+                data = value;
+            }
         }
 
 
@@ -276,6 +280,8 @@ namespace Landis.Library.DensityCohorts
             this.data.Treenumber = cohort.Treenumber;
             this.diameter = cohort.Diameter;
             this.data.Biomass = cohort.Biomass;
+            this.Data = cohort.Data;
+            this.AdditionalParameters = cohort.AdditionalParameters;
         }
 
         //---------------------------------------------------------------------

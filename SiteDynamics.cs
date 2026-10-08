@@ -5,10 +5,9 @@ using System.Diagnostics;
 using Landis.Core;
 using Landis.Utilities;
 using Landis.Library.DensityCohorts;
-using Landis.Library.AgeOnlyCohorts;
+using Landis.Library.UniversalCohorts;
 using Landis.SpatialModeling;
 using System.Linq;
-using Landis.Library.BiomassCohorts;
 
 
 namespace Landis.Library.DensityCohorts
@@ -211,8 +210,9 @@ namespace Landis.Library.DensityCohorts
 
             for (int i = 0; i < siteCohorts.AllCohorts.Count; i++)
             {
+                var spcDensity = SpeciesParameters.SpeciesDensity.AllSpecies[siteCohorts.AllCohorts[i].Species.Index];
                 double reldia = siteCohorts.AllCohorts[i].Diameter / qmd;
-                double mort = (0.84525 - (0.01074 * reldia) + (0.0000002 * Math.Pow(reldia, 3))) * (1 - shadeArray[siteCohorts.AllCohorts[i].Species.ShadeTolerance]);
+                double mort = (0.84525 - (0.01074 * reldia) + (0.0000002 * Math.Pow(reldia, 3))) * (1 - shadeArray[((SpeciesDensity)spcDensity).ShadeTolerance]);
                 cohortMortality.Add(i, mort);
             }
 
@@ -264,8 +264,9 @@ namespace Landis.Library.DensityCohorts
 
             for (int i = 0; i < siteCohorts.AllCohorts.Count; i++)
             {
+                var spcDensity = SpeciesParameters.SpeciesDensity.AllSpecies[siteCohorts.AllCohorts[i].Species.Index];
                 double reldia = siteCohorts.AllCohorts[i].Diameter / qmd;
-                double mort = (0.84525 - (0.01074 * reldia) + (0.0000002 * Math.Pow(reldia, 3))) * (1 - shadeArray[siteCohorts.AllCohorts[i].Species.ShadeTolerance]);
+                double mort = (0.84525 - (0.01074 * reldia) + (0.0000002 * Math.Pow(reldia, 3))) * (1 - shadeArray[((SpeciesDensity)spcDensity).ShadeTolerance]);
                 if (mort <= 0.0) { mort = 0.01; }
                 cohortMortality.Add(i, mort);
             }

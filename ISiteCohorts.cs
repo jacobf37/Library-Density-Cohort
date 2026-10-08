@@ -1,7 +1,7 @@
 //  Authors:  Robert M. Scheller, James B. Domingo
 using System.Collections.Generic;
 using Landis.Core;
-using AgeCohort = Landis.Library.AgeOnlyCohorts;
+using Landis.Library.UniversalCohorts;
 //using Landis.Extension.Succession.BiomassPnET;
 
 namespace Landis.Library.DensityCohorts
@@ -10,7 +10,7 @@ namespace Landis.Library.DensityCohorts
     /// All the density cohorts at a site.
     /// </summary>
     public interface ISiteCohorts
-        : Landis.Library.Cohorts.ISiteCohorts<DensityCohorts.ISpeciesCohorts>
+        : Landis.Library.UniversalCohorts.ISiteCohorts
 
     {
         int AverageAge { get; }

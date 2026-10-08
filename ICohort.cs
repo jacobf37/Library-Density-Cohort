@@ -10,7 +10,7 @@ namespace Landis.Library.DensityCohorts
     /// </summary>
     public interface ICohort
     //    : Landis.Library.AgeOnlyCohorts.ICohort, BiomassCohorts.ICohort, Landis.Library.Cohorts.ICohort
-    :BiomassCohorts.ICohort, Landis.Library.AgeOnlyCohorts.ICohort
+    : Landis.Library.UniversalCohorts.ICohort
     {
         /// <summary>
         /// The number of individual trees in the cohort.

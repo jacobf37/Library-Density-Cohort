@@ -1,6 +1,7 @@
 //  Authors:  Robert M. Scheller, James B. Domingo
 
 using System;
+using System.Collections.Generic;
 
 namespace Landis.Library.DensityCohorts
 {

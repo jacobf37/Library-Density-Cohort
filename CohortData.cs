@@ -1,3 +1,6 @@
+using Landis.Core;
+using Landis.Library.UniversalCohorts;
+
 namespace Landis.Library.DensityCohorts
 {
     /// <summary>
@@ -5,6 +8,16 @@ namespace Landis.Library.DensityCohorts
     /// </summary>
     public struct CohortData
     {
+        /// <summary>
+        /// The cohort
+        /// </summary>
+        public Cohort Cohort;
+
+        /// <summary>
+        /// The universal cohort data
+        /// </summary>
+        public UniversalCohorts.CohortData UniversalData;
+
         /// <summary>
         /// The cohort's age (years).
         /// </summary>
@@ -43,12 +56,30 @@ namespace Landis.Library.DensityCohorts
         /// The number of trees in the cohort.
         /// </param>
         public CohortData(ushort age,
-                          int treenumber)
+                          int treenumber,
+                          int biomass,
+                          int diameter,
+                          double ANPP
+                          )
         {
             this.Age = age;
             this.Treenumber = treenumber;
             this.Biomass = 0;
             this.Diameter = 0;
+            this.UniversalData.Age = age;
+            this.UniversalData.ANPP = ANPP;
+            this.UniversalData.Biomass = biomass;
+        }
+
+        public CohortData(Cohort cohort)
+        {
+            this.Age = cohort.Age;
+            this.Treenumber = cohort.Treenumber;
+            this.Biomass = cohort.Biomass;
+            this.Diameter = cohort.Diameter;
+            this.UniversalData.Age = cohort.Age;
+            this.UniversalData.Biomass = cohort.Biomass;
+            this.UniversalData.ANPP = cohort.Data.UniversalData.ANPP;
         }
     }
 }

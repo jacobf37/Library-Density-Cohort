@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 
 using Landis.Core;
-using Landis.Library.DensityCohorts;
-using Landis.Library.AgeOnlyCohorts;
+using Landis.Library.UniversalCohorts;
 using Landis.SpatialModeling;
 using Landis.Library.Metadata;
 using System.Reflection;
 using System.Linq;
-
 
 namespace Landis.Library.DensityCohorts
 {
@@ -17,7 +15,8 @@ namespace Landis.Library.DensityCohorts
     public static class SiteVars
     {
         private static ISiteVar<float> siteRD;
-        private static ISiteVar<Landis.Library.DensityCohorts.SiteCohorts> sitecohorts;
+        public static ISiteVar<Landis.Library.DensityCohorts.SiteCohorts> sitecohorts;
+        public static ISiteVar<Landis.Library.UniversalCohorts.SiteCohorts> UniversalCohorts;
 
         public static MetadataTable<SummaryLogMortality> summaryLogMortality;
 
@@ -30,8 +29,9 @@ namespace Landis.Library.DensityCohorts
 
             EcoregionData.ModelCore.RegisterSiteVar(siteRD, "Succession.SiteRd");
             EcoregionData.ModelCore.RegisterSiteVar(fineFuels, "Succession.FineFuels");
-
-            
+            sitecohorts = EcoregionData.ModelCore.Landscape.NewSiteVar<SiteCohorts>();
+            UniversalCohorts = EcoregionData.ModelCore.Landscape.NewSiteVar<Landis.Library.UniversalCohorts.SiteCohorts>();
+            summaryLogMortality = new MetadataTable<SummaryLogMortality>("Metadata/Density Output/SummaryLogMortality.csv");
         }
 
         public static void SpeciesSiteRD(Landis.Library.DensityCohorts.SpeciesCohorts speciesCohorts, ActiveSite site)
@@ -229,7 +229,7 @@ namespace Landis.Library.DensityCohorts
             double local_const = 3.1415926 / (4 * 10000.00);
             double total = 0;
             if (cohorts != null)
-                total = cohorts.Sum(x => Math.Pow(x.Diameter, 2) * local_const * x.Treenumber);
+                total = cohorts.Sum(x => Math.Pow(((Landis.Library.DensityCohorts.Cohort)x).Diameter, 2) * local_const * ((Landis.Library.DensityCohorts.Cohort)x).Treenumber);
             return total;
         }
 
@@ -239,7 +239,7 @@ namespace Landis.Library.DensityCohorts
         {
             int total = 0;
             if (cohorts != null)
-                total = cohorts.Sum(x => x.Treenumber);
+                total = cohorts.Sum(x => ((Landis.Library.DensityCohorts.Cohort)x).Treenumber);
             return total;
         }
 
